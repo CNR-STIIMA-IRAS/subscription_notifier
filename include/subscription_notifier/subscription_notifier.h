@@ -106,7 +106,8 @@ namespace ros_helper
     m_msg_counter++;
     m_mtx.unlock();
     
-    ROS_INFO("[%s] first message received!\n",m_topic.c_str());
+	if (m_msg_counter==1)
+      ROS_INFO("[%s] first message received!\n",m_topic.c_str());
     ROS_DEBUG("[MsgReceived %s] new message received!\n",m_topic.c_str());
     if (m_callback)
       m_callback(msg);
