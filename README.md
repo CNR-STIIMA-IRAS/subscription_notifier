@@ -21,7 +21,7 @@ creates an Subscriber instance of Topic _topic_ with a queue of _queue_size_ ele
 
 ```c++
 ros::NodeHandle nh;
-ros_helper::SubscriptionNotifier js_sub(  nh, "joint_states", 10);
+ros_helper::SubscriptionNotifier<sensor_msgs::JointState> js_sub(  nh, "joint_states", 10);
 if (!js_sub._waitForANewData())
   return 0;
 while (ros::ok())
