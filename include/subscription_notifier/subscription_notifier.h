@@ -55,7 +55,7 @@ namespace ros_helper
      * bool isANewDataAvailable();
      * check is there is a data that is not already read.
      */
-    bool              isANewDataAvailable();
+    bool isANewDataAvailable();
     
     /*
      * bool waitForANewData(const ros::Duration& timeout);
