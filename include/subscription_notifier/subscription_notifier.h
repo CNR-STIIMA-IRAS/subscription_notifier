@@ -138,7 +138,6 @@ namespace ros_helper
     {
       if (this->isANewDataAvailable())
       {
-        ROS_INFO("[%s] wait %5.4f seconds to receive a new message !\n",m_topic.c_str(), (ros::Time::now()-init_time).toSec());
         return true;
       }
       loopRate.sleep();
