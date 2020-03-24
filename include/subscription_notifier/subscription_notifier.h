@@ -123,9 +123,12 @@ namespace ros_helper
     return tmp;
   }
   
+
+  /* return true if a new data is arrived and none calls getData()*/
   template<typename T> 
   bool SubscriptionNotifier<T>::isANewDataAvailable()
   {
+    /* return true if a new data is arrived and none calls getData()*/
     return m_new_data;
   }
   
