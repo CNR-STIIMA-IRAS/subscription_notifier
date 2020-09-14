@@ -16,14 +16,15 @@ namespace ros_helper
   {
     
     protected:
-    ros::Subscriber   m_sub;
+    std::shared_ptr<ros::Subscriber>   m_sub;
     ros::NodeHandle   m_nh;
     bool              m_new_data;
     std::string       m_topic;
     unsigned long int m_msg_counter;
     std::mutex        m_mtx;
     T                 data;
-    
+    std::shared_ptr<ros::WallTime>     m_last_message_time;
+
     boost::function<void(const boost::shared_ptr<T const>& msg)> m_callback;
     
     /*
@@ -33,6 +34,14 @@ namespace ros_helper
     void callback(const boost::shared_ptr<T const>& msg);    
     
   public:
+
+    SubscriptionNotifier( ) = delete;
+    virtual ~SubscriptionNotifier() = default;
+    SubscriptionNotifier(const SubscriptionNotifier&) = delete;
+    SubscriptionNotifier& operator=(const SubscriptionNotifier&) = delete;
+    SubscriptionNotifier(SubscriptionNotifier&&) = delete;
+    SubscriptionNotifier& operator=(SubscriptionNotifier&&) = delete;
+
     /*
      * SubscriptionNotifier<T>( ros::NodeHandle& nh, const std::string& topic, uint32_t queue_size)
      * subscribe a topic and provide basic utilities (new messages received, wait for a new message).
@@ -69,10 +78,14 @@ namespace ros_helper
      * returns the last available data, and marks it as already read.
      */
     T  getData();
-  }; 
-  
-  
-  template<typename T> 
+
+    std::shared_ptr<ros::Subscriber>& getSubscriber( );
+    const std::shared_ptr<ros::WallTime>& getMsgReceivedTime();
+
+  };
+
+
+  template<typename T>
   SubscriptionNotifier<T>::SubscriptionNotifier(  ros::NodeHandle& nh, const std::string& topic, uint32_t queue_size, boost::function<void(const boost::shared_ptr<T const>& msg)> callback):
   SubscriptionNotifier<T>(nh,topic,queue_size)
   {
@@ -84,10 +97,12 @@ namespace ros_helper
   {
     m_nh=nh;
     m_topic=topic;
-    m_sub = m_nh.subscribe<T>(topic,queue_size,&ros_helper::SubscriptionNotifier<T>::callback,this); 
+    m_sub.reset( new ros::Subscriber() );
+    *m_sub = m_nh.subscribe<T>(topic,queue_size,&ros_helper::SubscriptionNotifier<T>::callback,this);
     m_new_data=false;
     m_msg_counter=0;
-    
+    m_last_message_time.reset();
+
     ROS_DEBUG("[%s] create SubscriptionNotifier!\n",m_topic.c_str());
   }
   
@@ -95,6 +110,7 @@ namespace ros_helper
   void SubscriptionNotifier<T>::setAdvancedCallback(boost::function<void(const boost::shared_ptr<T const>& msg)> callback)
   {
     m_callback=callback;
+    m_last_message_time.reset( new ros::WallTime() );
   }
   
   template<typename T> 
@@ -105,12 +121,17 @@ namespace ros_helper
     m_new_data=true;
     m_msg_counter++;
     m_mtx.unlock();
-    
-	if (m_msg_counter==1)
+
+    if (m_msg_counter==1)
+    {
       ROS_INFO("[%s] first message received!\n",m_topic.c_str());
+    }
     ROS_DEBUG("[MsgReceived %s] new message received!\n",m_topic.c_str());
     if (m_callback)
+    {
+      *m_last_message_time = ros::WallTime::now();
       m_callback(msg);
+    }
   }
   
   template<typename T> 
@@ -150,9 +171,19 @@ namespace ros_helper
     ROS_ERROR("[%s] timeout (%5.4f seconds) on receiving a new message !\n",m_topic.c_str(),(ros::Time::now()-init_time).toSec());
     return false;
   }   
-  
-  
-  
-}; 
 
-#endif
+  template<typename T>
+  std::shared_ptr<ros::Subscriber>& SubscriptionNotifier<T>::getSubscriber( )
+  {
+    return m_sub;
+  }
+
+  template<typename T>
+  const std::shared_ptr<ros::WallTime>& SubscriptionNotifier<T>::getMsgReceivedTime()
+  {
+    return m_last_message_time;
+  }
+
+}  // namespace ros_helper
+
+#endif  // subscription_notifier_20180622_0746
