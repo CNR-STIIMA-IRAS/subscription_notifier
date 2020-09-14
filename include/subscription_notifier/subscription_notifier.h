@@ -75,6 +75,7 @@ public:
    */
   bool waitForANewData(const ros::Duration& timeout=ros::Duration(10.0));
 
+    
   /*
    * T  getData();
    * returns the last available data, and marks it as already read.
@@ -85,6 +86,15 @@ public:
   const std::shared_ptr<ros::WallTime>& getMsgReceivedTime();
 
 };
+
+
+template<typename T>
+SubscriptionNotifier<T>::SubscriptionNotifier(ros::NodeHandle& nh, const std::string& topic, uint32_t queue_size,
+                                              boost::function<void(const boost::shared_ptr<T const>& msg)> callback):
+SubscriptionNotifier<T>(nh,topic,queue_size)
+{
+  setAdvancedCallback(callback);
+}
 
 template<typename T>
 SubscriptionNotifier<T>::SubscriptionNotifier(ros::NodeHandle& nh,
@@ -99,14 +109,6 @@ SubscriptionNotifier<T>::SubscriptionNotifier(ros::NodeHandle& nh,
   m_msg_counter=0;
   m_last_message_time.reset();
   ROS_DEBUG("[%s] create SubscriptionNotifier!\n", m_topic.c_str());
-}
-
-template<typename T>
-SubscriptionNotifier<T>::SubscriptionNotifier(ros::NodeHandle& nh, const std::string& topic, uint32_t queue_size,
-                                              boost::function<void(const boost::shared_ptr<T const>& msg)> callback):
-SubscriptionNotifier<T>(nh,topic,queue_size)
-{
-  setAdvancedCallback(callback);
 }
 
 template<typename T>
@@ -147,9 +149,12 @@ T SubscriptionNotifier<T>::getData()
   return tmp;
 }
 
+
+  /* return true if a new data is arrived and none calls getData()*/
 template<typename T>
 bool SubscriptionNotifier<T>::isANewDataAvailable()
 {
+    /* return true if a new data is arrived and none calls getData()*/
   return m_new_data;
 }
 
@@ -184,8 +189,6 @@ const std::shared_ptr<ros::WallTime>& SubscriptionNotifier<T>::getMsgReceivedTim
   return m_last_message_time;
 }
 
+}  // namespace ros_helper
 
-
-}
-
-#endif
+#endif  // subscription_notifier_20180622_0746
