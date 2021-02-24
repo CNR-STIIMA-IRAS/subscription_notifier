@@ -13,7 +13,7 @@ namespace ros_helper
     std::mutex    mtx;
     ros::WallTime time;
   public:
-      WallTimeMT() = default;
+      WallTimeMT() {time=ros::WallTime::now();}
       virtual ~WallTimeMT() = default;
       WallTimeMT(const WallTimeMT&) = delete;
       WallTimeMT& operator=(const WallTimeMT&) = delete;
