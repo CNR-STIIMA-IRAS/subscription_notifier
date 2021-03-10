@@ -151,7 +151,7 @@ namespace ros_helper
 
     if (m_msg_counter==1)
     {
-      ROS_WARN_STREAM(m_topic << "first message received!");
+      ROS_INFO_STREAM(m_topic << "first message received!");
     }
     if (m_callback)
     {
