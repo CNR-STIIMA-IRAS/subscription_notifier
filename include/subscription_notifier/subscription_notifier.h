@@ -131,7 +131,7 @@ namespace ros_helper
     m_msg_counter = 0;
     m_last_message_time.reset( new WallTimeMT() );
 
-    ROS_INFO("[%s] create SubscriptionNotifier!",m_topic.c_str());
+    ROS_DEBUG("[%s] create SubscriptionNotifier!",m_topic.c_str());
   }
   
   template<typename T>
