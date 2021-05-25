@@ -119,8 +119,8 @@ namespace ros_helper
   {
     setAdvancedCallback(callback);
   }
-  
-  template<typename T> 
+
+  template<typename T>
   SubscriptionNotifier<T>::SubscriptionNotifier(ros::NodeHandle& nh, const std::string& topic, uint32_t queue_size)
     : m_topic(topic)
   {
@@ -133,14 +133,14 @@ namespace ros_helper
 
     ROS_DEBUG("[%s] create SubscriptionNotifier!",m_topic.c_str());
   }
-  
+
   template<typename T>
   void SubscriptionNotifier<T>::setAdvancedCallback(boost::function<void(const boost::shared_ptr<T const>& msg)> callback)
   {
     m_callback=callback;
   }
-  
-  template<typename T> 
+
+  template<typename T>
   void SubscriptionNotifier<T>::callback(const boost::shared_ptr<T const>& msg)
   {
     m_mtx.lock();
@@ -151,7 +151,7 @@ namespace ros_helper
 
     if (m_msg_counter==1)
     {
-      ROS_INFO_STREAM(m_topic << "first message received!");
+      ROS_DEBUG_STREAM("topic '" <<m_topic << "': first message received!");
     }
     if (m_callback)
     {
@@ -159,8 +159,8 @@ namespace ros_helper
       m_callback(msg);
     }
   }
-  
-  template<typename T> 
+
+  template<typename T>
   T SubscriptionNotifier<T>::getData()
   {
     m_mtx.lock();
@@ -169,17 +169,16 @@ namespace ros_helper
     m_mtx.unlock();
     return tmp;
   }
-  
 
   /* return true if a new data is arrived and none calls getData()*/
-  template<typename T> 
+  template<typename T>
   bool SubscriptionNotifier<T>::isANewDataAvailable()
   {
     /* return true if a new data is arrived and none calls getData()*/
     return m_new_data;
   }
-  
-  template<typename T> 
+
+  template<typename T>
   bool SubscriptionNotifier<T>::waitForANewData(const ros::Duration& timeout)
   {
     ros::Rate loopRate(100);
@@ -193,10 +192,10 @@ namespace ros_helper
       loopRate.sleep();
       ros::spinOnce();
     }
-    
+
     ROS_ERROR("[%s] timeout (%5.4f seconds) on receiving a new message !\n",m_topic.c_str(),(ros::Time::now()-init_time).toSec());
     return false;
-  }   
+  }
 
   template<typename T>
   std::shared_ptr<ros::Subscriber>& SubscriptionNotifier<T>::getSubscriber( )
