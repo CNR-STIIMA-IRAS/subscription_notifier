@@ -11,20 +11,20 @@ namespace ros_helper
   {
   private:
     std::mutex    mtx;
-    ros::WallTime time;
+    ros::Time time;
   public:
-      WallTimeMT() {time=ros::WallTime::now();}
+      WallTimeMT() {time=ros::Time::now();}
       virtual ~WallTimeMT() = default;
       WallTimeMT(const WallTimeMT&) = delete;
       WallTimeMT& operator=(const WallTimeMT&) = delete;
       WallTimeMT(WallTimeMT&&) = delete;
       WallTimeMT& operator=(WallTimeMT&&) = delete;
-      void set(const ros::WallTime& t)
+      void set(const ros::Time& t)
       {
          std::lock_guard<std::mutex> lock(mtx);
          time = t;
       }
-      void get(ros::WallTime& t)
+      void get(ros::Time& t)
       {
          std::lock_guard<std::mutex> lock(mtx);
          t = time;
@@ -155,7 +155,7 @@ namespace ros_helper
     }
     if (m_callback)
     {
-      m_last_message_time->set( ros::WallTime::now() );
+      m_last_message_time->set( ros::Time::now() );
       m_callback(msg);
     }
   }
